@@ -15,10 +15,22 @@ This is the Tampermonkey / userscript build of Page2GPT.
 
 ## Actions
 
-- **Send to ChatGPT** — extracts the page, builds a prompt, copies it, and opens ChatGPT.
+- **Send to ChatGPT** — uses the already extracted page, copies the generated prompt, then opens ChatGPT.
 - **Copy Markdown** — copies only the normalized page content.
 - **Preview** — shows the exact Markdown that will be exported.
 - Tampermonkey's menu also exposes the same core commands.
+
+## iPhone / iPad clipboard behavior
+
+Page2GPT v0.2.1 adds an iOS-specific clipboard path. Safari/WebKit requires clipboard writes to happen directly during a user gesture, so the userscript pre-extracts the article when the Page2GPT panel opens and performs the clipboard call immediately when **Send to ChatGPT** or **Copy Markdown** is tapped.
+
+The script tries multiple compatible paths:
+
+1. `navigator.clipboard.writeText()` during the tap gesture;
+2. a selected-text `document.execCommand("copy")` fallback during the same gesture;
+3. desktop userscript-manager clipboard APIs where appropriate.
+
+On iOS, Page2GPT intentionally does **not** assume that `GM_setClipboard` succeeded. If automatic clipboard access is still blocked, Page2GPT keeps the current page open and shows a large selectable text box with **Copy again**, **Open ChatGPT**, and **Close** buttons. You can then use the standard iOS **Select All → Copy** command as the final fallback.
 
 ## Permissions
 
