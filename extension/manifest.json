@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Page2GPT",
+  "short_name": "Page2GPT",
+  "version": "0.1.0",
+  "description": "Extract the current webpage into clean Markdown and send it to ChatGPT.",
+  "permissions": ["activeTab", "scripting", "clipboardWrite"],
+  "action": {
+    "default_title": "Page2GPT",
+    "default_popup": "popup.html"
+  }
+}
