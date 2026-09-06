@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Page2GPT</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="topbar">
+        <div class="brand-mark" aria-hidden="true">P2G</div>
+        <div>
+          <h1>Page2GPT</h1>
+          <p>Browser → clean context → ChatGPT</p>
+        </div>
+      </header>
+
+      <section class="card article-card" aria-live="polite">
+        <div class="status-row">
+          <span id="statusPill" class="pill loading">Extracting…</span>
+          <span id="charCount" class="muted"></span>
+        </div>
+        <h2 id="articleTitle">Reading current page…</h2>
+        <p id="articleMeta" class="muted"></p>
+        <p id="warningText" class="warning hidden"></p>
+      </section>
+
+      <section class="card controls">
+        <label for="mode">Prompt</label>
+        <select id="mode">
+          <option value="deep" selected>Deep analysis</option>
+          <option value="summary">Summary</option>
+          <option value="factcheck">Fact check</option>
+          <option value="none">No instruction</option>
+        </select>
+
+        <label for="extraInstruction">Extra instruction <span class="muted">(optional)</span></label>
+        <textarea id="extraInstruction" rows="2" placeholder="e.g. Focus on implications for my research"></textarea>
+
+        <button id="sendButton" class="primary" disabled>Send to ChatGPT</button>
+        <div class="secondary-actions">
+          <button id="copyButton" disabled>Copy Markdown</button>
+          <button id="previewButton" disabled>Preview</button>
+        </div>
+        <p id="actionHint" class="hint">“Send” copies the full prompt locally, then opens ChatGPT.</p>
+      </section>
+
+      <section id="previewPanel" class="card preview hidden">
+        <div class="preview-head">
+          <strong>Markdown preview</strong>
+          <button id="closePreview" class="link-button">Close</button>
+        </div>
+        <textarea id="previewText" readonly></textarea>
+      </section>
+
+      <footer>
+        <span>v0.1.0</span>
+        <span>Local extraction · no API key</span>
+      </footer>
+    </main>
+
+    <script src="shared.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>
