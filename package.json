@@ -1,6 +1,6 @@
 {
   "name": "page2gpt",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "description": "Extract the current webpage into clean Markdown and send it to ChatGPT.",
   "scripts": {
