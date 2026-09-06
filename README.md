@@ -1,120 +1,123 @@
 # Page2GPT
 
-**Send the page you can read to the AI that cannot fetch it.**
+**Browser → clean context → ChatGPT.**
 
-Page2GPT is a privacy-first browser extension that extracts the meaningful content of the page currently open in your browser, turns it into clean Markdown, and prepares it for ChatGPT.
+Some webpages — especially WeChat Official Account articles — are perfectly readable in a user's browser but unavailable to server-side AI crawlers. Page2GPT bridges that gap by extracting the content **inside your browser**, converting it to clean Markdown, and preparing it for ChatGPT.
 
-The initial motivation is simple: some pages—especially **WeChat Official Account (`mp.weixin.qq.com`) articles**—open normally in a user's browser but are unavailable to server-side AI crawlers. Page2GPT bridges that gap by reading the page **locally from the browser DOM**.
+## What works in v0.1.0
 
-## What it does
+- Dedicated WeChat Official Account extraction for `mp.weixin.qq.com`
+- Generic article extraction for normal webpages
+- Title, source/account, publish time, article body, links, and image URLs
+- Clean Markdown export
+- Prompt presets: **Deep analysis**, **Summary**, **Fact check**, and **No instruction**
+- Prompt-injection boundary: webpage text is explicitly treated as untrusted source material
+- **Send to ChatGPT** = copy the complete prompt locally + open ChatGPT
+- No backend, API key, login, database, or browsing history
+- Manifest V3 WebExtension designed for Chrome-family browsers and Safari
 
-- Detects WeChat Official Account articles and uses a WeChat-specific extractor.
-- Falls back to a generic article extractor for ordinary pages.
-- Preserves useful structure such as headings, paragraphs, lists, links, bold text, blockquotes, and image URLs.
-- Removes hidden elements, scripts, styles, common WeChat UI noise, QR-code sections, and unrelated controls.
-- Produces clean Markdown with title, source/account, publication time, URL, and article content.
-- Offers four prompt modes:
-  - **Deep analysis** — key claims, reasoning, fact/opinion separation, weaknesses, and what matters.
-  - **Summary** — concise structured summary.
-  - **Fact check** — claims that should be verified and why.
-  - **No instruction** — only the extracted article context.
-- **Send to ChatGPT** copies the complete prompt to the clipboard and opens ChatGPT.
-- **Copy Markdown** copies only the normalized article.
-- **Preview** shows exactly what will be exported.
+## Why the ChatGPT step uses the clipboard
 
-## Privacy
+The first release deliberately avoids automating ChatGPT's webpage DOM. A selector-based integration would be fragile whenever ChatGPT's frontend changes. The stable workflow is:
 
-Page2GPT v0.1.0 has:
+```text
+webpage → Page2GPT → clean prompt copied locally → ChatGPT opens → paste
+```
 
-- no backend;
-- no OpenAI API key;
-- no analytics;
-- no account system;
-- no cloud storage.
+This also avoids putting long article content into a URL.
 
-Extraction and formatting happen locally in your browser. The extension uses the minimal permissions needed for the MVP: `activeTab`, `scripting`, and `clipboardWrite`.
+## Install — Chrome / Edge / Chromium
 
-## Install
-
-### Chrome / Edge / Chromium
-
-1. Clone or download this repository.
-2. Open the browser's Extensions page.
+1. Download or clone this repository.
+2. Open the browser's extension management page.
 3. Enable **Developer mode**.
 4. Choose **Load unpacked**.
-5. Select the `extension/` directory.
-6. Open a webpage and click the Page2GPT extension.
+5. Select the `extension/` folder.
+6. Open a webpage and click **Page2GPT** in the toolbar.
 
-### Safari on macOS
+## Install — Safari on macOS
 
-Recent Safari versions can load a WebExtension folder for local development/testing. Point Safari's Web Extension development workflow at the `extension/` directory. For App Store distribution or iOS/iPadOS packaging, use Apple's Safari Web Extension tooling in Xcode.
+Recent Safari versions can temporarily load a WebExtension folder directly for development:
 
-## Try it on WeChat
+1. Open **Safari → Settings → Developer**.
+2. Enable **Allow unsigned extensions** if required.
+3. Click **Add Temporary Extension…**.
+4. Select the `extension/` folder (or a zip of that folder).
+5. Enable Page2GPT in Safari's Extensions settings.
 
-Open a URL such as:
+Temporary Safari extensions are for development testing. For iPhone/iPad or App Store distribution, package the same `extension/` folder with Xcode's current Safari Web Extension packager:
+
+```bash
+xcrun safari-web-extension-packager ./extension
+```
+
+The packager creates an Xcode project for macOS/iOS Safari distribution.
+
+## Use it with a WeChat article
+
+Open a link such as:
 
 ```text
 https://mp.weixin.qq.com/s/...
 ```
 
-Then click Page2GPT. The popup should identify it as a WeChat article, show the title, and enable export actions.
+Then click Page2GPT. You should see:
 
-## Architecture
+- `WeChat article`
+- the article title
+- account / publish metadata when available
+- extracted character count
+
+Choose a prompt preset, then click **Send to ChatGPT**. Page2GPT copies the full prompt and opens ChatGPT. Paste with `⌘V` / `Ctrl+V`.
+
+## Permissions
+
+Page2GPT requests only:
+
+- `activeTab` — temporary access to the page after you click the extension
+- `scripting` — run the extractor in that active tab
+- `clipboardWrite` — copy Markdown / the ChatGPT prompt when requested
+
+There are no broad persistent host permissions in v0.1.0.
+
+## Project structure
 
 ```text
-Current browser tab
-      │
-      ▼
-content.js
-      │
-      ├── WeChat extractor
-      └── Generic extractor
-      │
-      ▼
-Normalized Article
-      │
-      ├── Markdown formatter
-      └── Prompt formatter
-      │
-      ▼
-popup.js
-      │
-      ├── Copy Markdown
-      ├── Preview
-      └── Send to ChatGPT
+Page2GPT/
+├── extension/
+│   ├── manifest.json
+│   ├── content.js      # WeChat + generic DOM extraction
+│   ├── shared.js       # Markdown + prompt formatting
+│   ├── popup.html
+│   ├── popup.css
+│   └── popup.js
+├── tests/
+│   └── shared.test.mjs
+├── docs/
+│   └── ARCHITECTURE.md
+├── package.json
+└── LICENSE
 ```
-
-See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for implementation details.
 
 ## Development
 
-The MVP intentionally uses plain JavaScript and Manifest V3. There is no framework and no build step.
-
-Run the tests with:
+No build step is required for v0.1.0.
 
 ```bash
+npm run check
 npm test
 ```
 
-The test fixture covers the most important WeChat DOM-cleaning and Markdown-formatting behavior.
+After editing extension files, reload the extension in your browser. For content-script changes, reload the target webpage too.
 
 ## Roadmap
 
-- [x] WeChat Official Account extraction
-- [x] Generic webpage extraction
-- [x] Markdown export
-- [x] Prompt presets
-- [x] Open ChatGPT + copy context
-- [ ] Stronger generic readability heuristics
-- [ ] Selection-only export from the context menu
-- [ ] Optional image handoff
-- [ ] Site adapters for Zhihu / Substack / Medium / paper pages
-- [ ] Multi-page collection and combined handoff
-- [ ] Packaged Safari app / iOS extension
-
-## Design principle
-
-Page2GPT does **not** try to become another AI client. The browser is responsible for accessing content the user can already see; ChatGPT remains responsible for understanding, verification, and follow-up reasoning.
+- Better generic extraction (Readability adapter)
+- Selection → Ask ChatGPT
+- Multi-page context bundles
+- Better image handoff
+- Optional site-specific extractors (Zhihu, Substack, Medium, arXiv, etc.)
+- Optional direct handoff mechanisms if a stable supported integration becomes available
 
 ## License
 
